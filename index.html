@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rút Quẻ Hỏi Đáp</title>
+<style>
+:root{--bg2:#3d0202;--gold:#f7c75a;--ok:#2ee86f;--bad:#ff2b2b}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Segoe UI",system-ui,sans-serif;color:#fff;
+  background:radial-gradient(ellipse at 40% 45%,#a8140e 0%,#6e0606 45%,var(--bg2) 100%);overflow-x:hidden}
+header{text-align:center;padding:14px 16px 0}
+h1{margin:0;font-size:clamp(24px,3.6vw,44px);color:var(--gold);letter-spacing:3px;text-shadow:0 3px 0 #4a0000,0 0 24px rgba(255,190,80,.35)}
+.sub{opacity:.85;font-size:15px;margin-top:4px}
+main{display:grid;grid-template-columns:1fr minmax(260px,340px);gap:20px;padding:16px;min-height:calc(100vh - 90px)}
+@media(max-width:760px){main{grid-template-columns:1fr}}
+
+/* ---------- ống quẻ ---------- */
+.stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;position:relative}
+.tube{position:relative;width:230px;height:400px;cursor:pointer;transform-origin:50% 95%;border:0;background:none;padding:0}
+.tube:focus-visible{outline:3px dashed var(--gold);outline-offset:8px}
+.sticks{position:absolute;left:28px;right:28px;top:0;height:210px}
+.stick{position:absolute;bottom:0;width:24px;height:200px;border-radius:12px 12px 4px 4px;transform-origin:50% 100%;
+  background:linear-gradient(90deg,#c98b40,#f7dca4 45%,#d39a50 75%,#b57a33)}
+.stick::before{content:"";position:absolute;top:0;left:0;right:0;height:36px;border-radius:12px 12px 3px 3px;
+  background:linear-gradient(90deg,#a50d16,#ff5a5a 45%,#c3121c 80%)}
+.body{position:absolute;left:0;right:0;bottom:0;height:260px;border-radius:16px/12px;overflow:hidden;
+  background:repeating-linear-gradient(90deg,rgba(90,40,0,.12) 0 2px,transparent 2px 9px),
+    linear-gradient(90deg,#8e4f12,#e2a03c 22%,#f8cd72 42%,#dc9634 70%,#7f420c);
+  box-shadow:0 34px 40px -10px rgba(0,0,0,.6)}
+.band{position:absolute;left:0;right:0;height:38px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.1) 0 2px,transparent 2px 8px),
+  linear-gradient(90deg,#5e2205,#b85a1c 28%,#e58d3d 48%,#a5481a 78%,#4f1c04);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25),inset 0 3px 0 rgba(255,220,150,.25)}
+.band.top{top:0}.band.bot{bottom:0}
+.seal{position:absolute;left:50%;top:52%;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;
+  border:3px solid rgba(255,235,170,.55);box-shadow:0 0 18px rgba(255,210,100,.5);transition:.3s}
+.seal::after{content:"";position:absolute;inset:24px;border-radius:50%;border:3px solid rgba(255,235,170,.55)}
+.tube:hover .seal{box-shadow:0 0 30px 6px rgba(255,210,100,.85);border-color:#fff3c4}
+.tube:hover .body{filter:brightness(1.08)}
+.shake{animation:shake .55s ease-in-out}
+.shake .stick{animation:jiggle .55s ease-in-out}
+@keyframes shake{0%{transform:rotate(0)}15%{transform:rotate(-13deg) translateY(-14px)}35%{transform:rotate(11deg) translateY(-22px)}
+  55%{transform:rotate(-9deg) translateY(-10px)}75%{transform:rotate(6deg) translateY(-4px)}100%{transform:rotate(0)}}
+@keyframes jiggle{0%,100%{translate:0 0}30%{translate:0 -18px}60%{translate:0 -6px}}
+.hint{font-size:18px;color:#ffe6a8;text-align:center;min-height:26px}
+.remain{font-size:14px;opacity:.75}
+
+/* quẻ bay ra */
+/* ảnh quẻ đã cắt sát, nền trong suốt (thư mục que-cut) */
+.qpic{width:24px;height:250px;background:center/contain no-repeat;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.flying{position:fixed;pointer-events:none;z-index:20;
+  transition:transform 1s cubic-bezier(.2,.9,.25,1.15),opacity .3s}
+
+/* ---------- bảng điểm ---------- */
+.board{background:rgba(40,0,0,.45);border:1px solid rgba(255,200,100,.25);border-radius:18px;padding:16px;align-self:start}
+.board h2{margin:0 0 4px;color:var(--gold);font-size:22px}
+.board p{margin:0 0 12px;font-size:13px;opacity:.75}
+.team{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px;padding:12px 16px;
+  border-radius:14px;border:2px solid transparent;background:rgba(255,255,255,.07);color:#fff;font:inherit;cursor:pointer;transition:.2s}
+.team:hover{background:rgba(255,255,255,.13)}
+.team.on{border-color:var(--gold);background:rgba(247,199,90,.18);box-shadow:0 0 18px rgba(247,199,90,.35)}
+.team .n{font-size:20px;font-weight:700}
+.team .s{font-size:34px;font-weight:800;color:var(--gold);min-width:50px;text-align:right}
+.team .s.pop{animation:pop .7s}
+@keyframes pop{40%{transform:scale(1.8);color:var(--ok)}}
+.plus{position:absolute;right:70px;top:6px;font-size:28px;font-weight:800;color:var(--ok);animation:up 1.1s forwards;pointer-events:none}
+@keyframes up{to{transform:translateY(-50px);opacity:0}}
+.tools{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:9px 14px;font-weight:600;font-size:14px;font-family:inherit;cursor:pointer;background:rgba(255,255,255,.15);color:#fff}
+.btn:hover{background:rgba(255,255,255,.25)}
+
+/* ---------- câu hỏi ---------- */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,0,0,.72);z-index:30}
+.modal.show{display:flex;animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.card{position:relative;width:min(860px,100%);max-height:calc(100vh - 32px);overflow:auto;display:grid;grid-template-columns:120px 1fr;gap:20px;
+  padding:26px 26px 26px;border-radius:22px;background:linear-gradient(160deg,#5a0606,#2a0101);border:2px solid rgba(247,199,90,.5);box-shadow:0 0 60px rgba(255,160,60,.25);
+  animation:zoom .35s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes zoom{from{transform:scale(.6)}}
+@media(max-width:600px){.card{grid-template-columns:1fr}.card .qimg{display:none}}
+.qimg{justify-self:center;align-self:center}
+.qno{color:var(--gold);font-weight:700;font-size:20px;letter-spacing:1px}
+.qtext{font-size:clamp(24px,3.2vw,38px);font-weight:700;line-height:1.3;margin:8px 0 14px}
+.ask{font-size:17px;opacity:.85}
+.tbar{grid-column:1/-1;height:16px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}
+.tbar div{height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,#f7c75a,#ffe39a);transition:background .3s}
+.tbar.low div{background:linear-gradient(90deg,#ff2b2b,#ff7a5a);animation:blink .4s infinite alternate}
+@keyframes blink{to{opacity:.55}}
+.timeup{color:var(--bad);font-weight:800;font-size:20px;min-height:26px}
+.pick{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 16px}
+.chip{border:2px solid rgba(255,255,255,.3);background:none;color:#fff;border-radius:999px;padding:7px 16px;font-weight:600;font-size:16px;font-family:inherit;cursor:pointer}
+.chip.on{border-color:var(--gold);background:var(--gold);color:#3a0000}
+.judge{display:flex;gap:14px;flex-wrap:wrap}
+.big{flex:1;min-width:140px;border:0;border-radius:14px;padding:16px;font-weight:800;font-size:24px;font-family:inherit;cursor:pointer;color:#fff;transition:transform .1s}
+.big:active{transform:scale(.96)}
+.big.ok{background:linear-gradient(#f7cf6a,#e0a52e);color:#3a0000}
+.big.no{background:linear-gradient(#7d3fb8,#45186f)}
+.big:disabled{opacity:.35;cursor:default}
+.answer{display:none;margin-top:16px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.08);font-size:18px}
+.answer b{color:var(--gold)}
+.next{display:none;margin-top:12px;font-size:17px;padding:11px 18px;background:var(--gold);color:#3a0000}
+.next:hover{background:#ffd982}
+
+/* ---------- hiệu ứng đúng / sai ---------- */
+.fx{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:40}
+.fx svg{width:min(46vw,320px);filter:drop-shadow(0 0 30px currentColor)}
+.fx path,.fx circle{fill:none;stroke:currentColor;stroke-linecap:round;stroke-width:14}
+.fx .draw{stroke-dasharray:400;stroke-dashoffset:400;animation:draw .5s .15s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.fx.good{color:var(--ok);animation:fxin .3s cubic-bezier(.2,.9,.3,1.5)}
+.fx.badx{color:var(--bad);background:radial-gradient(circle,rgba(255,0,0,.25),transparent 70%);animation:fxin .25s,shakex .5s .2s}
+@keyframes fxin{from{transform:scale(.3);opacity:0}}
+@keyframes shakex{20%,60%{translate:-18px 0}40%,80%{translate:18px 0}}
+.conf{position:fixed;width:12px;height:18px;top:50%;left:50%;z-index:41;pointer-events:none;border-radius:3px;animation:conf 1.4s ease-out forwards}
+@keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏮 RÚT QUẺ HỎI ĐÁP 🏮</h1>
+  <div class="sub">Tín ngưỡng hay Mê tín dị đoan? — Bấm vào ống quẻ để xóc, dừng tay là quẻ bay ra</div>
+</header>
+
+<main>
+  <section class="stage">
+    <button class="tube" id="tube" aria-label="Xóc ống quẻ">
+      <div class="sticks" id="sticks"></div>
+      <div class="body"><div class="band top"></div><div class="seal"></div><div class="band bot"></div></div>
+    </button>
+    <div class="hint" id="hint">Bấm vào ống quẻ để xóc (bấm bao nhiêu lần tùy ý)</div>
+    <div class="remain" id="remain"></div>
+  </section>
+
+  <aside class="board">
+    <h2>Bảng điểm</h2>
+    <p>Bấm vào nhóm để chọn nhóm đang trả lời</p>
+    <div id="teams"></div>
+    <div class="tools">
+      <button class="btn" id="refill">Làm mới ống quẻ</button>
+      <button class="btn" id="reset">Xóa điểm</button>
+    </div>
+  </aside>
+</main>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="qtext">
+  <div class="card">
+    <div class="tbar" id="timer"><div id="bar"></div></div>
+    <div class="qimg qpic" id="qimg" role="img" aria-label="Quẻ"></div>
+    <div>
+      <div class="qno" id="qno"></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="ask">Đây là <b>Tín ngưỡng</b> hay <b>Mê tín dị đoan</b>?</div>
+      <div class="timeup" id="timeup"></div>
+      <div class="ask">Nhóm trả lời:</div>
+      <div class="pick" id="pick"></div>
+      <div class="judge">
+        <button class="big ok" id="btnOk">TÍN NGƯỠNG</button>
+        <button class="big no" id="btnNo">MÊ TÍN DỊ ĐOAN</button>
+      </div>
+      <div class="answer" id="answer"></div>
+      <button class="btn next" id="btnNext">Rút quẻ tiếp ➜</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const Q = [
+  "Thắp hương mâm ngũ quả ngày Tết.",
+  "Đi chùa hái lộc đầu xuân cầu bình an.",
+  "Tổ chức múa lân, rước đèn cúng trăng rằm Trung Thu.",
+  "Tụng kinh siêu độ cho người thân đã khuất.",
+  "Ngư dân ven biển tổ chức lễ rước cá Ông (cá Voi).",
+  "Lễ hội vía Bà Chúa Xứ núi Sam.",
+  "Đeo thánh giá trên cổ để thể hiện đức tin cá nhân.",
+  "Cầu nguyện 1 phút trước khi vào phòng thi.",
+  "Làm lễ rửa tội cho trẻ sơ sinh.",
+  "Lập bàn thờ Trần Hưng Đạo tại gia.",
+  "Tham gia Đại lễ Phật Đản (Vesak).",
+  "Đi đền Trần xin ấn vào đêm 14 tháng Giêng.",
+  "Kiêng quét nhà ngày mùng 1 Tết (phong tục dân gian).",
+  "Ăn chay vào ngày rằm, mùng một.",
+  "Lập miếu thờ thần nông nghiệp của đồng bào dân tộc.",
+  "Đưa 20 triệu cho thầy cúng để giải hạn sao Thái Bạch.",
+  "Uống nước tro tàn nhang để chữa bệnh đau dạ dày.",
+  "Đốt xe máy SH, biệt thự hàng mã lớn bằng đồ thật.",
+  "Mua \"bùa ngải yêu\" trên mạng để ép người yêu cũ quay lại.",
+  "Chọn giờ đẹp mổ ép lấy thai nhi để con làm quan.",
+  "Đập bỏ bàn thờ tổ tiên vì nghe theo \"Hội thánh Đức Chúa Trời\".",
+  "Bói chén, gọi hồn để hỏi chỗ giấu vàng của người chết.",
+  "Thuê thầy pháp về yểm bùa nhà hàng xóm.",
+  "Mời thầy về đánh roi dâu trừ \"ma chó\" vì con khóc đêm.",
+  "Xin \"nước thánh\" ở miếu hoang bôi lên vết thương hở.",
+  "Mua vật phẩm phong thủy hàng chục triệu cam kết trúng số.",
+  "Lên đồng phán truyền hù dọa để ép người xem cúng tiền.",
+  "Nhịn ăn 40 ngày để thanh lọc linh hồn theo tà đạo.",
+  "Cúng bái gốc cây đa ngoài đường vì tin có ma trêu.",
+  "Đập trứng sống lên mặt người ốm để hút tà khí."
+];
+const answerOf = i => i < 15 ? "Tín ngưỡng" : "Mê tín dị đoan"; // câu 1–15 / 16–30
+const TEAMS = [1, 2, 3, 4, 6]; // không có nhóm 5
+const img = i => `que-cut/que-${String(i + 1).padStart(2, "0")}.png`;
+const $ = id => document.getElementById(id);
+
+// điểm lưu trong trình duyệt để lỡ tải lại trang không mất
+let state = { scores: {}, left: [], turn: 0 };
+try { Object.assign(state, JSON.parse(localStorage.getItem("rutque")) || {}); } catch {}
+TEAMS.forEach(t => state.scores[t] ??= 0);
+if (!state.left.length) state.left = Q.map((_, i) => i);
+const save = () => { try { localStorage.setItem("rutque", JSON.stringify(state)); } catch {} };
+
+/* ---- âm thanh nhỏ bằng WebAudio ---- */
+let ac;
+function tone(freq, dur, type = "sine", when = 0, vol = .2) {
+  try {
+    ac ??= new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + when;
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur);
+  } catch {}
+}
+const sRattle = () => { for (let i = 0; i < 6; i++) tone(500 + Math.random() * 900, .05, "square", i * .06, .05); };
+const sOk = () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .25, "triangle", i * .09));
+const sNo = () => { tone(160, .5, "sawtooth", 0, .25); tone(120, .5, "sawtooth", .15, .25); };
+const sTick = () => tone(900, .06, "square", 0, .06);
+
+/* ---- ống quẻ ---- */
+const sticksEl = $("sticks");
+for (let i = 0; i < 15; i++) {
+  const s = document.createElement("div");
+  s.className = "stick";
+  s.style.left = (i * 11 - 6) + "px";
+  s.style.height = 165 + Math.random() * 45 + "px";
+  s.style.transform = `rotate(${(i - 7) * 2.2 + (Math.random() * 4 - 2)}deg)`;
+  s.style.animationDelay = Math.random() * .12 + "s";
+  sticksEl.appendChild(s);
+}
+
+const tube = $("tube");
+let busy = false, drawTimer;
+tube.addEventListener("click", () => {
+  if (busy) return;
+  tube.classList.remove("shake"); void tube.offsetWidth; tube.classList.add("shake");
+  sRattle();
+  $("hint").textContent = "Xóc xóc xóc... dừng tay để rút quẻ!";
+  clearTimeout(drawTimer);
+  drawTimer = setTimeout(drawStick, 900); // ngừng bấm 0,9s thì quẻ bay ra
+});
+
+function drawStick() {
+  busy = true;
+  if (!state.left.length) state.left = Q.map((_, i) => i);
+  const i = state.left.splice(Math.floor(Math.random() * state.left.length), 1)[0];
+  save(); renderRemain();
+  const r = tube.getBoundingClientRect();
+  const f = document.createElement("div");
+  f.style.backgroundImage = `url(${img(i)})`; f.className = "qpic flying";
+  f.style.left = r.left + r.width / 2 - 12 + "px";
+  f.style.top = r.top - 40 + "px";
+  document.body.appendChild(f);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    f.style.transform = `translate(${innerWidth / 2 - (r.left + r.width / 2)}px, ${innerHeight / 2 - r.top - 140}px) scale(1.8) rotate(360deg)`;
+  }));
+  tone(400, .6, "sine", 0, .15); tone(800, .4, "sine", .2, .1);
+  setTimeout(() => { f.remove(); openQuestion(i); }, 1300);
+}
+
+/* ---- câu hỏi + đếm ngược ---- */
+let cur, picked, left10, tick, judged;
+function openQuestion(i) {
+  cur = i; judged = false; picked = TEAMS[state.turn % TEAMS.length];
+  $("qimg").style.backgroundImage = `url(${img(i)})`;
+  $("qno").textContent = `QUẺ SỐ ${i + 1}`;
+  $("qtext").textContent = Q[i];
+  $("timeup").textContent = "";
+  $("answer").style.display = $("btnNext").style.display = "none";
+  $("btnOk").disabled = $("btnNo").disabled = false;
+  renderPick();
+  $("modal").classList.add("show");
+  // thanh thời gian 7 giây chạy rút ngắn dần
+  const bar = $("bar");
+  bar.style.transition = "none"; bar.style.width = "100%"; $("timer").classList.remove("low");
+  void bar.offsetWidth;
+  bar.style.transition = `width ${TIME}s linear, background .3s`; bar.style.width = "0%";
+  left10 = TIME;
+  clearInterval(tick);
+  tick = setInterval(() => {
+    left10--;
+    $("timer").classList.toggle("low", left10 <= 3);
+    if (left10 > 0 && left10 <= 3) sTick();
+    if (left10 <= 0) { clearInterval(tick); $("timeup").textContent = "HẾT GIỜ!"; tone(220, .6, "square", 0, .15); }
+  }, 1000);
+}
+const TIME = 7;
+function stopBar() { const bar = $("bar"); bar.style.width = getComputedStyle(bar).width; bar.style.transition = "none"; }
+function renderPick() {
+  $("pick").innerHTML = "";
+  TEAMS.forEach(t => {
+    const b = document.createElement("button");
+    b.className = "chip" + (t === picked ? " on" : "");
+    b.textContent = "Nhóm " + t;
+    b.onclick = () => { if (!judged) { picked = t; renderPick(); } };
+    $("pick").appendChild(b);
+  });
+}
+
+function judge(choice) {
+  if (judged) return;
+  const ok = choice === answerOf(cur); // game tự chấm theo đáp án
+  judged = true; clearInterval(tick); stopBar();
+  $("btnOk").disabled = $("btnNo").disabled = true;
+  ok ? fxGood() : fxBad();
+  if (ok) state.scores[picked]++;
+  state.turn = TEAMS.indexOf(picked) + 1; // lượt sau chuyển sang nhóm kế tiếp
+  save(); renderTeams(ok ? picked : null);
+  $("answer").innerHTML = `Nhóm ${picked} chọn <b>${choice}</b> — ${ok ? "ĐÚNG! +1 điểm 🎉" : `SAI! Đáp án là <b>${answerOf(cur)}</b>`}`;
+  $("answer").style.display = "block";
+  $("btnNext").style.display = "inline-block";
+}
+$("btnOk").onclick = () => judge("Tín ngưỡng");
+$("btnNo").onclick = () => judge("Mê tín dị đoan");
+$("btnNext").onclick = () => {
+  $("modal").classList.remove("show");
+  busy = false;
+  $("hint").textContent = "Bấm vào ống quẻ để xóc (bấm bao nhiêu lần tùy ý)";
+};
+
+/* ---- hiệu ứng ---- */
+function fx(cls, svg, ms) {
+  const d = document.createElement("div");
+  d.className = "fx " + cls; d.innerHTML = svg;
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), ms);
+}
+function fxGood() {
+  sOk();
+  fx("good", `<svg viewBox="0 0 200 200"><circle class="draw" cx="100" cy="100" r="85"/><path class="draw" style="animation-delay:.45s" d="M55 104 L88 136 L148 70"/></svg>`, 1500);
+  const colors = ["#f7c75a", "#2ee86f", "#ff5a5a", "#fff", "#5ab4ff"];
+  for (let k = 0; k < 60; k++) {
+    const c = document.createElement("div");
+    c.className = "conf";
+    c.style.background = colors[k % colors.length];
+    const a = Math.random() * Math.PI * 2, d = 200 + Math.random() * 380;
+    c.style.setProperty("--x", Math.cos(a) * d + "px");
+    c.style.setProperty("--y", Math.sin(a) * d + 120 + "px");
+    c.style.setProperty("--r", Math.random() * 720 + "deg");
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 1500);
+  }
+}
+function fxBad() {
+  sNo();
+  fx("badx", `<svg viewBox="0 0 200 200"><path class="draw" d="M40 40 L160 160"/><path class="draw" style="animation-delay:.35s" d="M160 40 L40 160"/></svg>`, 1400);
+}
+
+/* ---- bảng điểm ---- */
+function renderTeams(bump) {
+  const box = $("teams"); box.innerHTML = "";
+  const now = TEAMS[state.turn % TEAMS.length];
+  TEAMS.forEach(t => {
+    const b = document.createElement("button");
+    b.className = "team" + (t === now ? " on" : "");
+    b.innerHTML = `<span class="n">Nhóm ${t}</span><span class="s${t === bump ? " pop" : ""}">${state.scores[t]}</span>`;
+    if (t === bump) b.insertAdjacentHTML("beforeend", `<span class="plus">+1</span>`);
+    b.onclick = () => { state.turn = TEAMS.indexOf(t); save(); renderTeams(); };
+    box.appendChild(b);
+  });
+}
+const renderRemain = () => $("remain").textContent = `Còn ${state.left.length}/30 quẻ trong ống`;
+
+$("refill").onclick = () => { if (confirm("Bỏ lại đủ 30 quẻ vào ống?")) { state.left = Q.map((_, i) => i); save(); renderRemain(); } };
+$("reset").onclick = () => { if (confirm("Xóa hết điểm các nhóm?")) { TEAMS.forEach(t => state.scores[t] = 0); state.turn = 0; save(); renderTeams(); } };
+
+renderTeams(); renderRemain();
+</script>
+</body>
+</html>
