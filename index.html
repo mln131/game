@@ -8,16 +8,32 @@
 :root{--bg2:#3d0202;--gold:#f7c75a;--ok:#2ee86f;--bad:#ff2b2b}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;font-family:"Segoe UI",system-ui,sans-serif;color:#fff;
-  background:radial-gradient(ellipse at 40% 45%,#a8140e 0%,#6e0606 45%,var(--bg2) 100%);overflow-x:hidden}
+  background:radial-gradient(ellipse at 50% 45%,#a8140e 0%,#6e0606 45%,var(--bg2) 100%);overflow-x:hidden}
 header{text-align:center;padding:14px 16px 0}
-h1{margin:0;font-size:clamp(24px,3.6vw,44px);color:var(--gold);letter-spacing:3px;text-shadow:0 3px 0 #4a0000,0 0 24px rgba(255,190,80,.35)}
+h1{margin:0;font-size:clamp(24px,5vw,44px);color:var(--gold);letter-spacing:3px;text-shadow:0 3px 0 #4a0000,0 0 24px rgba(255,190,80,.35)}
 .sub{opacity:.85;font-size:15px;margin-top:4px}
-main{display:grid;grid-template-columns:1fr minmax(260px,340px);gap:20px;padding:16px;min-height:calc(100vh - 90px)}
-@media(max-width:760px){main{grid-template-columns:1fr}}
+.screen{display:none;flex-direction:column;align-items:center;gap:16px;padding:16px;min-height:calc(100vh - 90px);justify-content:center}
+.screen.show{display:flex}
+.panel{width:min(440px,100%);background:rgba(40,0,0,.5);border:1px solid rgba(255,200,100,.3);border-radius:18px;padding:22px;text-align:center}
+.panel h2{margin:0 0 10px;color:var(--gold)}
+.panel p{margin:0 0 14px;opacity:.85;line-height:1.5}
+input{width:100%;padding:14px 16px;border-radius:12px;border:2px solid rgba(247,199,90,.5);background:rgba(0,0,0,.3);color:#fff;font-weight:600;font-size:18px;font-family:inherit;outline:none}
+input:focus{border-color:var(--gold)}
+.btn{border:0;border-radius:12px;padding:12px 18px;font-weight:700;font-size:17px;font-family:inherit;cursor:pointer;background:var(--gold);color:#3a0000}
+.btn:hover{background:#ffd982}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{background:rgba(255,255,255,.15);color:#fff}
+.wide{width:100%;margin-top:12px}
+.err{color:#ff9b9b;min-height:22px;margin-top:8px;font-size:15px}
+
+/* thanh trạng thái */
+.status{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.pill{background:rgba(0,0,0,.3);border:1px solid rgba(247,199,90,.35);border-radius:999px;padding:6px 14px;font-size:15px}
+.pill b{color:var(--gold)}
 
 /* ---------- ống quẻ ---------- */
-.stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;position:relative}
 .tube{position:relative;width:230px;height:400px;cursor:pointer;transform-origin:50% 95%;border:0;background:none;padding:0}
+@media(max-width:480px){.tube{zoom:.8}}
 .tube:focus-visible{outline:3px dashed var(--gold);outline-offset:8px}
 .sticks{position:absolute;left:28px;right:28px;top:0;height:210px}
 .stick{position:absolute;bottom:0;width:24px;height:200px;border-radius:12px 12px 4px 4px;transform-origin:50% 100%;
@@ -42,67 +58,45 @@ main{display:grid;grid-template-columns:1fr minmax(260px,340px);gap:20px;padding
   55%{transform:rotate(-9deg) translateY(-10px)}75%{transform:rotate(6deg) translateY(-4px)}100%{transform:rotate(0)}}
 @keyframes jiggle{0%,100%{translate:0 0}30%{translate:0 -18px}60%{translate:0 -6px}}
 .hint{font-size:18px;color:#ffe6a8;text-align:center;min-height:26px}
-.remain{font-size:14px;opacity:.75}
 
-/* quẻ bay ra */
-/* ảnh quẻ đã cắt sát, nền trong suốt (thư mục que-cut) */
+/* ảnh quẻ đã cắt sát, nền trong suốt */
 .qpic{width:24px;height:250px;background:center/contain no-repeat;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
-.flying{position:fixed;pointer-events:none;z-index:20;
-  transition:transform 1s cubic-bezier(.2,.9,.25,1.15),opacity .3s}
-
-/* ---------- bảng điểm ---------- */
-.board{background:rgba(40,0,0,.45);border:1px solid rgba(255,200,100,.25);border-radius:18px;padding:16px;align-self:start}
-.board h2{margin:0 0 4px;color:var(--gold);font-size:22px}
-.board p{margin:0 0 12px;font-size:13px;opacity:.75}
-.team{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px;padding:12px 16px;
-  border-radius:14px;border:2px solid transparent;background:rgba(255,255,255,.07);color:#fff;font:inherit;cursor:pointer;transition:.2s}
-.team:hover{background:rgba(255,255,255,.13)}
-.team.on{border-color:var(--gold);background:rgba(247,199,90,.18);box-shadow:0 0 18px rgba(247,199,90,.35)}
-.team .n{font-size:20px;font-weight:700}
-.team .s{font-size:34px;font-weight:800;color:var(--gold);min-width:50px;text-align:right}
-.team .s.pop{animation:pop .7s}
-@keyframes pop{40%{transform:scale(1.8);color:var(--ok)}}
-.plus{position:absolute;right:70px;top:6px;font-size:28px;font-weight:800;color:var(--ok);animation:up 1.1s forwards;pointer-events:none}
-@keyframes up{to{transform:translateY(-50px);opacity:0}}
-.tools{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
-.btn{border:0;border-radius:10px;padding:9px 14px;font-weight:600;font-size:14px;font-family:inherit;cursor:pointer;background:rgba(255,255,255,.15);color:#fff}
-.btn:hover{background:rgba(255,255,255,.25)}
+.flying{position:fixed;pointer-events:none;z-index:20;transition:transform 1s cubic-bezier(.2,.9,.25,1.15),opacity .3s}
 
 /* ---------- câu hỏi ---------- */
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,0,0,.72);z-index:30}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:12px;background:rgba(15,0,0,.75);z-index:30}
 .modal.show{display:flex;animation:fade .25s}
 @keyframes fade{from{opacity:0}}
-.card{position:relative;width:min(860px,100%);max-height:calc(100vh - 32px);overflow:auto;display:grid;grid-template-columns:120px 1fr;gap:20px;
-  padding:26px 26px 26px;border-radius:22px;background:linear-gradient(160deg,#5a0606,#2a0101);border:2px solid rgba(247,199,90,.5);box-shadow:0 0 60px rgba(255,160,60,.25);
+.card{position:relative;width:min(860px,100%);max-height:calc(100vh - 24px);overflow:auto;display:grid;grid-template-columns:70px 1fr;gap:16px 20px;
+  padding:22px;border-radius:22px;background:linear-gradient(160deg,#5a0606,#2a0101);border:2px solid rgba(247,199,90,.5);box-shadow:0 0 60px rgba(255,160,60,.25);
   animation:zoom .35s cubic-bezier(.2,.9,.3,1.3)}
 @keyframes zoom{from{transform:scale(.6)}}
-@media(max-width:600px){.card{grid-template-columns:1fr}.card .qimg{display:none}}
+@media(max-width:600px){.card{grid-template-columns:1fr;padding:16px}.card .qimg{display:none}}
 .qimg{justify-self:center;align-self:center}
-.qno{color:var(--gold);font-weight:700;font-size:20px;letter-spacing:1px}
-.qtext{font-size:clamp(24px,3.2vw,38px);font-weight:700;line-height:1.3;margin:8px 0 14px}
-.ask{font-size:17px;opacity:.85}
-.tbar{grid-column:1/-1;height:16px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}
-.tbar div{height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,#f7c75a,#ffe39a);transition:background .3s}
+.qno{color:var(--gold);font-weight:700;font-size:18px;letter-spacing:1px}
+.qtext{font-size:clamp(19px,2.6vw,28px);font-weight:700;line-height:1.35;margin:6px 0 14px}
+.tbar{grid-column:1/-1;height:14px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden}
+.tbar div{height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,#f7c75a,#ffe39a)}
 .tbar.low div{background:linear-gradient(90deg,#ff2b2b,#ff7a5a);animation:blink .4s infinite alternate}
 @keyframes blink{to{opacity:.55}}
-.timeup{color:var(--bad);font-weight:800;font-size:20px;min-height:26px}
-.pick{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 16px}
-.chip{border:2px solid rgba(255,255,255,.3);background:none;color:#fff;border-radius:999px;padding:7px 16px;font-weight:600;font-size:16px;font-family:inherit;cursor:pointer}
-.chip.on{border-color:var(--gold);background:var(--gold);color:#3a0000}
-.judge{display:flex;gap:14px;flex-wrap:wrap}
-.big{flex:1;min-width:140px;border:0;border-radius:14px;padding:16px;font-weight:800;font-size:24px;font-family:inherit;cursor:pointer;color:#fff;transition:transform .1s}
-.big:active{transform:scale(.96)}
-.big.ok{background:linear-gradient(#f7cf6a,#e0a52e);color:#3a0000}
-.big.no{background:linear-gradient(#7d3fb8,#45186f)}
-.big:disabled{opacity:.35;cursor:default}
-.answer{display:none;margin-top:16px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.08);font-size:18px}
+.timeup{color:var(--bad);font-weight:800;font-size:18px;min-height:24px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.opts{grid-template-columns:1fr}}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;border:2px solid transparent;border-radius:14px;padding:12px 14px;font-weight:600;font-size:16px;font-family:inherit;
+  line-height:1.35;color:#fff;cursor:pointer;transition:transform .1s,opacity .2s}
+.opt:active{transform:scale(.97)}
+.opt .k{flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:rgba(0,0,0,.25);font-weight:800}
+.opt:nth-child(1){background:#b3261e}.opt:nth-child(2){background:#1f5fbf}.opt:nth-child(3){background:#8a6508}.opt:nth-child(4){background:#2b7a3a}
+.opt:disabled{cursor:default;opacity:.35}
+.opt.right{opacity:1;border-color:#fff;box-shadow:0 0 0 3px var(--ok)}
+.opt.wrong{opacity:1;border-color:#fff;box-shadow:0 0 0 3px var(--bad)}
+.answer{display:none;margin-top:14px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,.08);font-size:17px}
 .answer b{color:var(--gold)}
-.next{display:none;margin-top:12px;font-size:17px;padding:11px 18px;background:var(--gold);color:#3a0000}
-.next:hover{background:#ffd982}
+.next{display:none;margin-top:12px}
 
 /* ---------- hiệu ứng đúng / sai ---------- */
 .fx{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:40}
-.fx svg{width:min(46vw,320px);filter:drop-shadow(0 0 30px currentColor)}
+.fx svg{width:min(46vw,300px);filter:drop-shadow(0 0 30px currentColor)}
 .fx path,.fx circle{fill:none;stroke:currentColor;stroke-linecap:round;stroke-width:14}
 .fx .draw{stroke-dasharray:400;stroke-dashoffset:400;animation:draw .5s .15s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
@@ -112,34 +106,55 @@ main{display:grid;grid-template-columns:1fr minmax(260px,340px);gap:20px;padding
 @keyframes shakex{20%,60%{translate:-18px 0}40%,80%{translate:18px 0}}
 .conf{position:fixed;width:12px;height:18px;top:50%;left:50%;z-index:41;pointer-events:none;border-radius:3px;animation:conf 1.4s ease-out forwards}
 @keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+
+.big{font-size:56px;font-weight:800;color:var(--gold);line-height:1.1}
 </style>
 </head>
 <body>
 <header>
   <h1>🏮 RÚT QUẺ HỎI ĐÁP 🏮</h1>
-  <div class="sub">Tín ngưỡng hay Mê tín dị đoan? — Bấm vào ống quẻ để xóc, dừng tay là quẻ bay ra</div>
+  <div class="sub">20 quẻ · mỗi câu 12 giây · đúng nhiều nhất và nhanh nhất sẽ thắng</div>
 </header>
 
-<main>
-  <section class="stage">
-    <button class="tube" id="tube" aria-label="Xóc ống quẻ">
-      <div class="sticks" id="sticks"></div>
-      <div class="body"><div class="band top"></div><div class="seal"></div><div class="band bot"></div></div>
-    </button>
-    <div class="hint" id="hint">Bấm vào ống quẻ để xóc (bấm bao nhiêu lần tùy ý)</div>
-    <div class="remain" id="remain"></div>
-  </section>
+<!-- 1. nhập tên -->
+<section class="screen" id="sJoin">
+  <div class="panel">
+    <h2>Nhập tên của bạn</h2>
+    <p>Xóc ống để rút quẻ, mỗi quẻ là một câu hỏi. Bằng điểm thì ai trả lời nhanh hơn xếp trên.</p>
+    <form id="joinForm">
+      <input id="nameIn" maxlength="40" placeholder="Họ và tên" autocomplete="name" required aria-label="Họ và tên">
+      <button class="btn wide">Bắt đầu</button>
+    </form>
+    <div class="err" id="joinErr"></div>
+  </div>
+</section>
 
-  <aside class="board">
-    <h2>Bảng điểm</h2>
-    <p>Bấm vào nhóm để chọn nhóm đang trả lời</p>
-    <div id="teams"></div>
-    <div class="tools">
-      <button class="btn" id="refill">Làm mới ống quẻ</button>
-      <button class="btn" id="reset">Xóa điểm</button>
-    </div>
-  </aside>
-</main>
+<!-- 2. xóc quẻ -->
+<section class="screen" id="sPlay">
+  <div class="status">
+    <span class="pill">👤 <b id="whoName"></b></span>
+    <span class="pill">Đúng <b id="scoreTxt">0</b></span>
+    <span class="pill">Quẻ <b id="progTxt">0/20</b></span>
+  </div>
+  <button class="tube" id="tube" aria-label="Xóc ống quẻ">
+    <div class="sticks" id="sticks"></div>
+    <div class="body"><div class="band top"></div><div class="seal"></div><div class="band bot"></div></div>
+  </button>
+  <div class="hint" id="hint">Bấm vào ống quẻ để xóc (bấm bao nhiêu lần tùy ý)</div>
+</section>
+
+<!-- 3. kết quả -->
+<section class="screen" id="sEnd">
+  <div class="panel">
+    <h2>Hoàn thành!</h2>
+    <p id="endName"></p>
+    <div class="big" id="endScore"></div>
+    <p id="endTime"></p>
+    <p id="sendMsg">Đang gửi điểm...</p>
+    <button class="btn ghost" id="resend" style="display:none">Gửi lại</button>
+    <a class="btn wide" style="display:block;text-decoration:none" href="board.html">Xem bảng xếp hạng</a>
+  </div>
+</section>
 
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="qtext">
   <div class="card">
@@ -148,66 +163,56 @@ main{display:grid;grid-template-columns:1fr minmax(260px,340px);gap:20px;padding
     <div>
       <div class="qno" id="qno"></div>
       <div class="qtext" id="qtext"></div>
-      <div class="ask">Đây là <b>Tín ngưỡng</b> hay <b>Mê tín dị đoan</b>?</div>
       <div class="timeup" id="timeup"></div>
-      <div class="ask">Nhóm trả lời:</div>
-      <div class="pick" id="pick"></div>
-      <div class="judge">
-        <button class="big ok" id="btnOk">TÍN NGƯỠNG</button>
-        <button class="big no" id="btnNo">MÊ TÍN DỊ ĐOAN</button>
-      </div>
+      <div class="opts" id="opts"></div>
       <div class="answer" id="answer"></div>
       <button class="btn next" id="btnNext">Rút quẻ tiếp ➜</button>
     </div>
   </div>
 </div>
 
+<script src="config.js"></script>
 <script>
+// c = chỉ số đáp án đúng (0=A, 1=B, 2=C, 3=D)
 const Q = [
-  "Thắp hương mâm ngũ quả ngày Tết.",
-  "Đi chùa hái lộc đầu xuân cầu bình an.",
-  "Tổ chức múa lân, rước đèn cúng trăng rằm Trung Thu.",
-  "Tụng kinh siêu độ cho người thân đã khuất.",
-  "Ngư dân ven biển tổ chức lễ rước cá Ông (cá Voi).",
-  "Lễ hội vía Bà Chúa Xứ núi Sam.",
-  "Đeo thánh giá trên cổ để thể hiện đức tin cá nhân.",
-  "Cầu nguyện 1 phút trước khi vào phòng thi.",
-  "Làm lễ rửa tội cho trẻ sơ sinh.",
-  "Lập bàn thờ Trần Hưng Đạo tại gia.",
-  "Tham gia Đại lễ Phật Đản (Vesak).",
-  "Đi đền Trần xin ấn vào đêm 14 tháng Giêng.",
-  "Kiêng quét nhà ngày mùng 1 Tết (phong tục dân gian).",
-  "Ăn chay vào ngày rằm, mùng một.",
-  "Lập miếu thờ thần nông nghiệp của đồng bào dân tộc.",
-  "Đưa 20 triệu cho thầy cúng để giải hạn sao Thái Bạch.",
-  "Uống nước tro tàn nhang để chữa bệnh đau dạ dày.",
-  "Đốt xe máy SH, biệt thự hàng mã lớn bằng đồ thật.",
-  "Mua \"bùa ngải yêu\" trên mạng để ép người yêu cũ quay lại.",
-  "Chọn giờ đẹp mổ ép lấy thai nhi để con làm quan.",
-  "Đập bỏ bàn thờ tổ tiên vì nghe theo \"Hội thánh Đức Chúa Trời\".",
-  "Bói chén, gọi hồn để hỏi chỗ giấu vàng của người chết.",
-  "Thuê thầy pháp về yểm bùa nhà hàng xóm.",
-  "Mời thầy về đánh roi dâu trừ \"ma chó\" vì con khóc đêm.",
-  "Xin \"nước thánh\" ở miếu hoang bôi lên vết thương hở.",
-  "Mua vật phẩm phong thủy hàng chục triệu cam kết trúng số.",
-  "Lên đồng phán truyền hù dọa để ép người xem cúng tiền.",
-  "Nhịn ăn 40 ngày để thanh lọc linh hồn theo tà đạo.",
-  "Cúng bái gốc cây đa ngoài đường vì tin có ma trêu.",
-  "Đập trứng sống lên mặt người ốm để hút tà khí."
+  {q: "Theo chủ nghĩa Mác - Lênin, bản chất của tôn giáo là gì?", a: ["Một hình thái ý thức xã hội phản ánh trung thực hiện thực khách quan.", "Một hình thái ý thức xã hội phản ánh hư ảo hiện thực khách quan.", "Một hiện tượng tự nhiên tồn tại vĩnh viễn cùng con người.", "Một hệ thống triết học duy vật khoa học."], c: 1},
+  {q: "Theo Ph. Ăngghen, các lực lượng trần thế khi phản ánh hư ảo vào đầu óc con người sẽ mang hình thức nào?", a: ["Lực lượng tự nhiên thuần túy.", "Lực lượng xã hội tiến bộ.", "Lực lượng siêu trần thế.", "Lực lượng vật chất hiện thực."], c: 2},
+  {q: "Nhân tố nào xét đến cùng quyết định sự tồn tại và phát triển của tôn giáo?", a: ["Trình độ nhận thức triết học của con người.", "Sản xuất vật chất và các quan hệ kinh tế.", "Ý muốn chủ quan của các giáo sĩ.", "Quyền lực của giai cấp cầm quyền."], c: 1},
+  {q: "Đâu không phải là một trong những tiêu chí cơ bản của tôn giáo với tư cách là một thực thể xã hội?", a: ["Có hệ thống giáo thuyết (giáo lý, giáo luật, lễ nghi).", "Có hệ thống cơ sở thờ tự và tổ chức nhân sự.", "Có hệ thống tín đồ tự nguyện tin theo.", "Có thế giới quan duy vật biện chứng."], c: 3},
+  {q: "Tôn giáo mang thế giới quan nào sau đây?", a: ["Thế giới quan duy vật biện chứng.", "Thế giới quan duy vật siêu hình.", "Thế giới quan duy tâm.", "Thế giới quan khoa học thực nghiệm."], c: 2},
+  {q: "Khái niệm nào dùng để chỉ hệ thống niềm tin, sự ngưỡng mộ trước các lực lượng thần thánh, linh thiêng để cầu mong sự che chở, giúp đỡ (như thờ cúng tổ tiên, thờ anh hùng dân tộc)?", a: ["Tín ngưỡng.", "Tôn giáo.", "Mê tín dị đoan.", "Giáo thuyết."], c: 0},
+  {q: "Niềm tin mê muội, cuồng tín vào các lực lượng siêu nhiên dẫn đến những hành vi cực đoan, sai lệch quá mức, trái với đạo đức và pháp luật được gọi là gì?", a: ["Tín ngưỡng dân gian.", "Mê tín dị đoan.", "Tôn giáo lớn.", "Tôn giáo mới."], c: 1},
+  {q: "Trong xã hội công xã nguyên thủy, nguồn gốc tự nhiên và kinh tế - xã hội của tôn giáo xuất phát từ đâu?", a: ["Do sự xuất hiện giai cấp áp bức, bóc lột.", "Do lực lượng sản xuất chưa phát triển, con người cảm thấy yếu đuối và bất lực trước thiên nhiên.", "Do sự tác động của các nhà triết học duy tâm.", "Do nhu cầu giao lưu văn hóa giữa các bộ lạc."], c: 1},
+  {q: "Khi xã hội xuất hiện giai cấp đối kháng, nguồn gốc xã hội nào thúc đẩy con người trông chờ vào sự giải phóng của lực lượng siêu nhiên?", a: ["Khoảng cách giữa \"biết\" và \"chưa biết\".", "Sự áp bức bất công, tội ác và sự sợ hãi trước giai cấp thống trị.", "Lòng biết ơn đối với các anh hùng dân tộc.", "Nhu cầu cầu an khi thực hiện việc ma chay, cưới xin."], c: 1},
+  {q: "Thực chất của nguồn gốc nhận thức của tôn giáo là gì?", a: ["Sự tìm hiểu bản chất thế giới của khoa học.", "Sự tuyệt đối hóa, cường điệu mặt chủ thể của nhận thức con người.", "Sự phát triển vượt bậc của trí tuệ con người.", "Sự nhận thức đúng đắn các quy luật tự nhiên."], c: 1},
+  {q: "Yếu tố tâm lý tích cực nào cũng có thể dẫn con người đến với tôn giáo (ví dụ: thờ anh hùng dân tộc, thờ thành hoàng làng)?", a: ["Sự sợ hãi trước rủi ro, bệnh tật.", "Tâm lý muốn cầu an khi làm việc lớn.", "Lòng biết ơn, tình yêu thương và sự kính trọng đối với người có công với nước, với dân.", "Sự cuồng tín và mê muội."], c: 2},
+  {q: "Tính chất nào thể hiện rằng tôn giáo có sự hình thành, tồn tại, phát triển và biến đổi theo các điều kiện kinh tế - xã hội, lịch sử cụ thể?", a: ["Tính quần chúng.", "Tính chính trị.", "Tính vĩnh cửu.", "Tính lịch sử."], c: 3},
+  {q: "Tính quần chúng của tôn giáo biểu hiện ở điểm nào sau đây?", a: ["Số lượng tín đồ đông đảo và là nơi sinh hoạt văn hóa, tinh thần của một bộ phận quần chúng nhân dân.", "Tôn giáo chỉ dành cho giai cấp bóc lột và thống trị.", "Tôn giáo mang lại thế giới quan duy vật cho nhân dân lao động.", "Tôn giáo xuất hiện ngay từ khi con người mới xuất hiện và không bao giờ biến mất."], c: 0},
+  {q: "Tính chất chính trị của tôn giáo bắt đầu xuất hiện khi nào?", a: ["Ngay từ xã hội công xã nguyên thủy.", "Khi xã hội phân chia giai cấp và có sự đối kháng về lợi ích giai cấp.", "Khi khoa học kỹ thuật phát triển cao.", "Khi các giáo hội tôn giáo giải thể."], c: 1},
+  {q: "Tính chính trị tiêu cực, phản tiến bộ của tôn giáo thể hiện rõ nhất khi nào?", a: ["Khi tín đồ thực hiện các hành vi hướng thiện, nhân đạo.", "Khi giai cấp bóc lột, thống trị sử dụng tôn giáo để phục vụ lợi ích giai cấp mình, chống lại nhân dân lao động.", "Khi quần chúng tín đồ đi lễ tại các cơ sở thờ tự.", "Khi nhà nước bảo hộ quyền tự do tín ngưỡng."], c: 1},
+  {q: "Theo quan điểm Mác - Lênin, việc theo đạo, đổi đạo hay không theo đạo là thuộc quyền tự do lựa chọn của ai?", a: ["Quyết định bắt buộc của các chức sắc tôn giáo.", "Quyền tự do tư tưởng của mỗi người dân.", "Sự chỉ định của cơ quan nhà nước.", "Sự can thiệp bắt buộc của gia đình."], c: 1},
+  {q: "Để khắc phục những ảnh hưởng tiêu cực của tôn giáo đối với quần chúng, chủ nghĩa Mác - Lênin chủ trương làm gì?", a: ["Dùng biện pháp hành chính để cấm đoán các hoạt động tôn giáo.", "Gắn liền với quá trình cải tạo xã hội cũ, xây dựng xã hội mới, xác lập thế giới hiện thực không có áp bức, bất công.", "Can thiệp trực tiếp vào công việc nội bộ của các giáo hội tôn giáo.", "Xóa bỏ ngay lập tức tất cả các cơ sở thờ tự."], c: 1},
+  {q: "Mặt tư tưởng trong việc giải quyết vấn đề tôn giáo phản ánh điều gì?", a: ["Mâu thuẫn đối kháng về lợi ích kinh tế giữa các giai cấp.", "Sự khác nhau về niềm tin giữa người có tín ngưỡng và người không theo tôn giáo, phản ánh mâu thuẫn không mang tính đối kháng.", "Sự đấu tranh giữa thế lực lợi dụng tôn giáo với cách mạng.", "Xung đột vũ lực giữa các tôn giáo khác nhau."], c: 1},
+  {q: "Mặt chính trị trong việc giải quyết vấn đề tôn giáo phản ánh mối quan hệ nào?", a: ["Sự khác biệt về mức độ tin giữa các tín đồ.", "Mâu thuẫn đối kháng về lợi ích kinh tế, chính trị giữa các giai cấp, giữa thế lực lợi dụng tôn giáo chống cách mạng với lợi ích nhân dân.", "Nhu cầu sinh hoạt tinh thần thuần túy của nhân dân.", "Sự hòa hợp giáo lý giữa các hệ phái."], c: 1},
+  {q: "Quan điểm lịch sử cụ thể trong giải quyết vấn đề tôn giáo đòi hỏi điều gì?", a: ["Áp dụng một chính sách cố định cho tất cả các tôn giáo ở mọi thời kỳ.", "Xem xét, đánh giá và ứng xử đối với tôn giáo tùy thuộc vào những điều kiện kinh tế - xã hội - lịch sử cụ thể ở từng giai đoạn.", "Coi tất cả các tôn giáo đều có vai trò hoàn toàn giống nhau trong lịch sử.", "Giữ nguyên các quy định quản lý tôn giáo từ thời phong kiến."], c: 1}
 ];
-const answerOf = i => i < 15 ? "Tín ngưỡng" : "Mê tín dị đoan"; // câu 1–15 / 16–30
-const TEAMS = [1, 2, 3, 4, 6]; // không có nhóm 5
+console.assert(Q.length === 20 && Q.every(x => x.a.length === 4 && x.c >= 0 && x.c < 4), "bộ câu hỏi sai cấu trúc");
+const TIME = 12; // giây mỗi câu
+const KEYS = "ABCD";
 const img = i => `que-cut/que-${String(i + 1).padStart(2, "0")}.png`;
 const $ = id => document.getElementById(id);
 
-// điểm lưu trong trình duyệt để lỡ tải lại trang không mất
-let state = { scores: {}, left: [], turn: 0 };
-try { Object.assign(state, JSON.parse(localStorage.getItem("rutque")) || {}); } catch {}
-TEAMS.forEach(t => state.scores[t] ??= 0);
-if (!state.left.length) state.left = Q.map((_, i) => i);
-const save = () => { try { localStorage.setItem("rutque", JSON.stringify(state)); } catch {} };
+// Tiến trình lưu trong máy người chơi: tải lại trang không làm lại được câu đã rút
+const STORE = "rutque-mln-v1";
+let S = null;
+try { S = JSON.parse(localStorage.getItem(STORE)); } catch {}
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch {} };
+const score = () => S.log.filter(x => x.ok).length;
+const totalMs = () => S.log.reduce((s, x) => s + x.ms, 0);
 
-/* ---- âm thanh nhỏ bằng WebAudio ---- */
+function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.toggle("show", s.id === id)); }
+
+/* ---- âm thanh ---- */
 let ac;
 function tone(freq, dur, type = "sine", when = 0, vol = .2) {
   try {
@@ -223,8 +228,24 @@ const sOk = () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .25, "triangle
 const sNo = () => { tone(160, .5, "sawtooth", 0, .25); tone(120, .5, "sawtooth", .15, .25); };
 const sTick = () => tone(900, .06, "square", 0, .06);
 
+/* ---- nhập tên ---- */
+$("joinForm").onsubmit = e => {
+  e.preventDefault();
+  const name = $("nameIn").value.trim().replace(/\s+/g, " ");
+  if (name.length < 2) { $("joinErr").textContent = "Tên cần ít nhất 2 ký tự."; return; }
+  S = { name, left: Q.map((_, i) => i), log: [], sent: false };
+  save(); startPlay();
+};
+
+function startPlay() {
+  $("whoName").textContent = S.name;
+  renderStatus();
+  if (!S.left.length) return finish();
+  show("sPlay");
+}
+const renderStatus = () => { $("scoreTxt").textContent = score(); $("progTxt").textContent = `${S.log.length}/20`; };
+
 /* ---- ống quẻ ---- */
-const sticksEl = $("sticks");
 for (let i = 0; i < 15; i++) {
   const s = document.createElement("div");
   s.className = "stick";
@@ -232,9 +253,8 @@ for (let i = 0; i < 15; i++) {
   s.style.height = 165 + Math.random() * 45 + "px";
   s.style.transform = `rotate(${(i - 7) * 2.2 + (Math.random() * 4 - 2)}deg)`;
   s.style.animationDelay = Math.random() * .12 + "s";
-  sticksEl.appendChild(s);
+  $("sticks").appendChild(s);
 }
-
 const tube = $("tube");
 let busy = false, drawTimer;
 tube.addEventListener("click", () => {
@@ -248,9 +268,10 @@ tube.addEventListener("click", () => {
 
 function drawStick() {
   busy = true;
-  if (!state.left.length) state.left = Q.map((_, i) => i);
-  const i = state.left.splice(Math.floor(Math.random() * state.left.length), 1)[0];
-  save(); renderRemain();
+  const i = S.left.splice(Math.floor(Math.random() * S.left.length), 1)[0];
+  // ghi trước là "hết giờ"; trả lời xong mới sửa lại, nên tải lại trang giữa chừng không làm lại được câu này
+  S.log.push({ i, pick: null, ok: false, ms: TIME * 1000 });
+  save();
   const r = tube.getBoundingClientRect();
   const f = document.createElement("div");
   f.style.backgroundImage = `url(${img(i)})`; f.className = "qpic flying";
@@ -264,65 +285,96 @@ function drawStick() {
   setTimeout(() => { f.remove(); openQuestion(i); }, 1300);
 }
 
-/* ---- câu hỏi + đếm ngược ---- */
-let cur, picked, left10, tick, judged;
+/* ---- câu hỏi ---- */
+let cur, judged, tick, t0, left;
 function openQuestion(i) {
-  cur = i; judged = false; picked = TEAMS[state.turn % TEAMS.length];
+  cur = i; judged = false;
   $("qimg").style.backgroundImage = `url(${img(i)})`;
   $("qno").textContent = `QUẺ SỐ ${i + 1}`;
-  $("qtext").textContent = Q[i];
+  $("qtext").textContent = Q[i].q;
   $("timeup").textContent = "";
   $("answer").style.display = $("btnNext").style.display = "none";
-  $("btnOk").disabled = $("btnNo").disabled = false;
-  renderPick();
+  $("opts").innerHTML = "";
+  Q[i].a.forEach((txt, k) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<span class="k">${KEYS[k]}</span><span></span>`;
+    b.lastChild.textContent = txt;
+    b.onclick = () => judge(k);
+    $("opts").appendChild(b);
+  });
   $("modal").classList.add("show");
-  // thanh thời gian 7 giây chạy rút ngắn dần
   const bar = $("bar");
   bar.style.transition = "none"; bar.style.width = "100%"; $("timer").classList.remove("low");
   void bar.offsetWidth;
-  bar.style.transition = `width ${TIME}s linear, background .3s`; bar.style.width = "0%";
-  left10 = TIME;
+  bar.style.transition = `width ${TIME}s linear`; bar.style.width = "0%";
+  t0 = performance.now(); left = TIME;
   clearInterval(tick);
   tick = setInterval(() => {
-    left10--;
-    $("timer").classList.toggle("low", left10 <= 3);
-    if (left10 > 0 && left10 <= 3) sTick();
-    if (left10 <= 0) { clearInterval(tick); $("timeup").textContent = "HẾT GIỜ!"; tone(220, .6, "square", 0, .15); }
+    left--;
+    $("timer").classList.toggle("low", left <= 3);
+    if (left > 0 && left <= 3) sTick();
+    if (left <= 0) judge(null);
   }, 1000);
 }
-const TIME = 7;
-function stopBar() { const bar = $("bar"); bar.style.width = getComputedStyle(bar).width; bar.style.transition = "none"; }
-function renderPick() {
-  $("pick").innerHTML = "";
-  TEAMS.forEach(t => {
-    const b = document.createElement("button");
-    b.className = "chip" + (t === picked ? " on" : "");
-    b.textContent = "Nhóm " + t;
-    b.onclick = () => { if (!judged) { picked = t; renderPick(); } };
-    $("pick").appendChild(b);
-  });
-}
 
-function judge(choice) {
+function judge(k) {
   if (judged) return;
-  const ok = choice === answerOf(cur); // game tự chấm theo đáp án
-  judged = true; clearInterval(tick); stopBar();
-  $("btnOk").disabled = $("btnNo").disabled = true;
+  judged = true; clearInterval(tick);
+  const bar = $("bar"); bar.style.width = getComputedStyle(bar).width; bar.style.transition = "none";
+  const ms = k === null ? TIME * 1000 : Math.min(TIME * 1000, Math.round(performance.now() - t0));
+  const ok = k === Q[cur].c;
+  Object.assign(S.log[S.log.length - 1], { pick: k, ok, ms });
+  save(); renderStatus();
+  [...$("opts").children].forEach((b, j) => {
+    b.disabled = true;
+    if (j === Q[cur].c) b.classList.add("right");
+    else if (j === k) b.classList.add("wrong");
+  });
   ok ? fxGood() : fxBad();
-  if (ok) state.scores[picked]++;
-  state.turn = TEAMS.indexOf(picked) + 1; // lượt sau chuyển sang nhóm kế tiếp
-  save(); renderTeams(ok ? picked : null);
-  $("answer").innerHTML = `Nhóm ${picked} chọn <b>${choice}</b> — ${ok ? "ĐÚNG! +1 điểm 🎉" : `SAI! Đáp án là <b>${answerOf(cur)}</b>`}`;
+  if (k === null) $("timeup").textContent = "HẾT GIỜ!";
+  $("answer").innerHTML = ok
+    ? `ĐÚNG! +1 điểm 🎉 <span style="opacity:.7">(${(ms / 1000).toFixed(1)} giây)</span>`
+    : `${k === null ? "Hết giờ" : "SAI"}! Đáp án đúng là <b>${KEYS[Q[cur].c]}</b>`;
   $("answer").style.display = "block";
+  $("btnNext").textContent = S.left.length ? "Rút quẻ tiếp ➜" : "Xem kết quả ➜";
   $("btnNext").style.display = "inline-block";
 }
-$("btnOk").onclick = () => judge("Tín ngưỡng");
-$("btnNo").onclick = () => judge("Mê tín dị đoan");
 $("btnNext").onclick = () => {
   $("modal").classList.remove("show");
   busy = false;
   $("hint").textContent = "Bấm vào ống quẻ để xóc (bấm bao nhiêu lần tùy ý)";
+  if (!S.left.length) finish();
 };
+
+/* ---- kết thúc + gửi điểm ---- */
+function finish() {
+  show("sEnd");
+  $("endName").textContent = S.name;
+  $("endScore").textContent = `${score()}/20`;
+  $("endTime").textContent = `Tổng thời gian trả lời: ${(totalMs() / 1000).toFixed(1)} giây`;
+  if (S.sent) { $("sendMsg").textContent = "✔ Đã gửi điểm."; return; }
+  send();
+}
+async function send() {
+  $("resend").style.display = "none";
+  $("sendMsg").textContent = "Đang gửi điểm...";
+  try {
+    if (!SCRIPT_URL) throw new Error("chưa cài link nhận điểm (config.js)");
+    const detail = S.log.map(x => `${x.i + 1}:${x.pick === null ? "-" : KEYS[x.pick]}${x.ok ? "✓" : "✗"}`).join(" ");
+    // text/plain để trình duyệt không gửi yêu cầu kiểm tra trước (Apps Script không hỗ trợ)
+    const res = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ name: S.name, score: score(), ms: totalMs(), detail }) });
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || "máy chủ từ chối");
+    S.sent = true; save();
+    $("sendMsg").textContent = "✔ Đã gửi điểm.";
+  } catch (e) {
+    $("sendMsg").textContent = "Chưa gửi được điểm: " + (e instanceof TypeError ? "lỗi mạng, kiểm tra kết nối rồi bấm Gửi lại" : e.message);
+    $("resend").style.display = "inline-block";
+  }
+}
+$("resend").onclick = send;
 
 /* ---- hiệu ứng ---- */
 function fx(cls, svg, ms) {
@@ -335,11 +387,11 @@ function fxGood() {
   sOk();
   fx("good", `<svg viewBox="0 0 200 200"><circle class="draw" cx="100" cy="100" r="85"/><path class="draw" style="animation-delay:.45s" d="M55 104 L88 136 L148 70"/></svg>`, 1500);
   const colors = ["#f7c75a", "#2ee86f", "#ff5a5a", "#fff", "#5ab4ff"];
-  for (let k = 0; k < 60; k++) {
+  for (let k = 0; k < 50; k++) {
     const c = document.createElement("div");
     c.className = "conf";
     c.style.background = colors[k % colors.length];
-    const a = Math.random() * Math.PI * 2, d = 200 + Math.random() * 380;
+    const a = Math.random() * Math.PI * 2, d = 160 + Math.random() * 340;
     c.style.setProperty("--x", Math.cos(a) * d + "px");
     c.style.setProperty("--y", Math.sin(a) * d + 120 + "px");
     c.style.setProperty("--r", Math.random() * 720 + "deg");
@@ -352,25 +404,8 @@ function fxBad() {
   fx("badx", `<svg viewBox="0 0 200 200"><path class="draw" d="M40 40 L160 160"/><path class="draw" style="animation-delay:.35s" d="M160 40 L40 160"/></svg>`, 1400);
 }
 
-/* ---- bảng điểm ---- */
-function renderTeams(bump) {
-  const box = $("teams"); box.innerHTML = "";
-  const now = TEAMS[state.turn % TEAMS.length];
-  TEAMS.forEach(t => {
-    const b = document.createElement("button");
-    b.className = "team" + (t === now ? " on" : "");
-    b.innerHTML = `<span class="n">Nhóm ${t}</span><span class="s${t === bump ? " pop" : ""}">${state.scores[t]}</span>`;
-    if (t === bump) b.insertAdjacentHTML("beforeend", `<span class="plus">+1</span>`);
-    b.onclick = () => { state.turn = TEAMS.indexOf(t); save(); renderTeams(); };
-    box.appendChild(b);
-  });
-}
-const renderRemain = () => $("remain").textContent = `Còn ${state.left.length}/30 quẻ trong ống`;
-
-$("refill").onclick = () => { if (confirm("Bỏ lại đủ 30 quẻ vào ống?")) { state.left = Q.map((_, i) => i); save(); renderRemain(); } };
-$("reset").onclick = () => { if (confirm("Xóa hết điểm các nhóm?")) { TEAMS.forEach(t => state.scores[t] = 0); state.turn = 0; save(); renderTeams(); } };
-
-renderTeams(); renderRemain();
+// mở trang: đã có tiến trình thì chơi tiếp (câu đang mở dở tính là hết giờ), chưa có thì nhập tên
+if (S && S.name) startPlay(); else show("sJoin");
 </script>
 </body>
 </html>

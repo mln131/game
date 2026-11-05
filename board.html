@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bảng Xếp Hạng</title>
+<style>
+:root{--gold:#f7c75a}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Segoe UI",system-ui,sans-serif;color:#fff;
+  background:radial-gradient(ellipse at 50% 30%,#a8140e 0%,#6e0606 45%,#3d0202 100%);padding:16px}
+h1{margin:10px 0 4px;text-align:center;font-size:clamp(26px,5vw,46px);color:var(--gold);letter-spacing:3px;text-shadow:0 3px 0 #4a0000}
+.sub{text-align:center;opacity:.8;margin-bottom:18px}
+.list{width:min(720px,100%);margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.row{display:grid;grid-template-columns:54px 1fr auto auto;gap:14px;align-items:center;padding:12px 16px;border-radius:14px;background:rgba(0,0,0,.28);font-size:18px}
+.row.top1{background:linear-gradient(90deg,rgba(247,199,90,.45),rgba(247,199,90,.12));font-size:22px}
+.row.top2{background:linear-gradient(90deg,rgba(220,220,230,.35),rgba(220,220,230,.08))}
+.row.top3{background:linear-gradient(90deg,rgba(205,127,50,.4),rgba(205,127,50,.1))}
+.rk{font-weight:800;text-align:center;font-size:22px}
+.nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc{font-weight:800;color:var(--gold)}
+.tm{opacity:.9;font-size:15px;min-width:64px;text-align:right}
+.msg{text-align:center;opacity:.85;margin-top:20px}
+a{color:var(--gold)}
+</style>
+</head>
+<body>
+<h1>🏆 BẢNG XẾP HẠNG 🏆</h1>
+<div class="sub">Xếp theo số câu đúng · bằng điểm thì ai nhanh hơn đứng trên · tự cập nhật mỗi 5 giây</div>
+<div class="list" id="list"></div>
+<div class="msg" id="msg">Đang tải...</div>
+<div class="msg"><a href="./">← Về trang chơi</a></div>
+
+<script src="config.js"></script>
+<script>
+// Mỗi tên chỉ tính lần nộp đầu tiên; xếp: đúng nhiều hơn > tổng thời gian ít hơn > nộp sớm hơn
+function rank(rows) {
+  const seen = new Set(), out = [];
+  [...rows].sort((a, b) => a.t - b.t).forEach(r => {
+    const key = String(r.name).trim().toLowerCase();
+    if (!seen.has(key)) { seen.add(key); out.push(r); }
+  });
+  return out.sort((a, b) => b.score - a.score || a.sec - b.sec || a.t - b.t);
+}
+// tự kiểm tra cách xếp hạng
+(() => {
+  const r = rank([
+    { t: 1, name: "An", score: 15, sec: 90 },
+    { t: 2, name: "Bình", score: 15, sec: 60 },
+    { t: 3, name: "an", score: 20, sec: 10 }, // nộp lại trùng tên: bỏ
+    { t: 4, name: "Chi", score: 18, sec: 200 }
+  ]).map(x => x.name).join(",");
+  console.assert(r === "Chi,Bình,An", "xếp hạng sai: " + r);
+})();
+
+const medal = i => ["🥇", "🥈", "🥉"][i] || i + 1;
+async function load() {
+  if (!SCRIPT_URL) { $msg("Chưa cài link nhận điểm trong config.js"); return; }
+  try {
+    const rows = rank(await (await fetch(SCRIPT_URL)).json());
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+    rows.forEach((r, i) => {
+      const d = document.createElement("div");
+      d.className = "row" + (i < 3 ? " top" + (i + 1) : "");
+      d.innerHTML = `<span class="rk">${medal(i)}</span><span class="nm"></span><span class="sc">${Number(r.score)}/20</span><span class="tm">${Number(r.sec).toFixed(1)}s</span>`;
+      d.querySelector(".nm").textContent = r.name;
+      list.appendChild(d);
+    });
+    $msg(rows.length ? `${rows.length} người đã nộp bài` : "Chưa có ai nộp bài");
+  } catch (e) { $msg("Không tải được bảng điểm, đang thử lại..."); }
+}
+const $msg = t => document.getElementById("msg").textContent = t;
+load(); setInterval(load, 5000);
+</script>
+</body>
+</html>
