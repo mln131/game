@@ -18,7 +18,8 @@ h1{margin:10px 0 4px;text-align:center;font-size:clamp(26px,5vw,46px);color:var(
 .row.top3{background:linear-gradient(90deg,rgba(205,127,50,.4),rgba(205,127,50,.1))}
 .rk{font-weight:800;text-align:center;font-size:22px}
 .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sc{font-weight:800;color:var(--gold)}
+.sc{font-weight:800;color:var(--gold);text-align:right}
+.sc small{display:block;font-size:13px;font-weight:600;color:#fff;opacity:.85}
 .tm{opacity:.9;font-size:15px;min-width:64px;text-align:right}
 .msg{text-align:center;opacity:.85;margin-top:20px}
 a{color:var(--gold)}
@@ -26,14 +27,14 @@ a{color:var(--gold)}
 </head>
 <body>
 <h1>🏆 BẢNG XẾP HẠNG 🏆</h1>
-<div class="sub">Xếp theo số câu đúng · bằng điểm thì ai nhanh hơn đứng trên · tự cập nhật mỗi 5 giây</div>
+<div class="sub">Xếp theo điểm (có thưởng chuỗi 🔥) · bằng điểm thì ai nhanh hơn đứng trên · tự cập nhật mỗi 5 giây</div>
 <div class="list" id="list"></div>
 <div class="msg" id="msg">Đang tải...</div>
 <div class="msg"><a href="./">← Về trang chơi</a></div>
 
 <script src="config.js"></script>
 <script>
-// Mỗi tên chỉ tính lần nộp đầu tiên; xếp: đúng nhiều hơn > tổng thời gian ít hơn > nộp sớm hơn
+// Mỗi tên chỉ tính lần nộp đầu tiên; xếp: điểm cao hơn > tổng thời gian ít hơn > nộp sớm hơn
 function rank(rows) {
   const seen = new Set(), out = [];
   [...rows].sort((a, b) => a.t - b.t).forEach(r => {
@@ -63,7 +64,8 @@ async function load() {
     rows.forEach((r, i) => {
       const d = document.createElement("div");
       d.className = "row" + (i < 3 ? " top" + (i + 1) : "");
-      d.innerHTML = `<span class="rk">${medal(i)}</span><span class="nm"></span><span class="sc">${Number(r.score)}/20</span><span class="tm">${Number(r.sec).toFixed(1)}s</span>`;
+      const info = r.correct === "" || r.correct == null ? "" : `<small>${Number(r.correct)}/20 đúng · 🔥${Number(r.streak)}</small>`;
+      d.innerHTML = `<span class="rk">${medal(i)}</span><span class="nm"></span><span class="sc">${Number(r.score)} điểm${info}</span><span class="tm">${Number(r.sec).toFixed(1)}s</span>`;
       d.querySelector(".nm").textContent = r.name;
       list.appendChild(d);
     });

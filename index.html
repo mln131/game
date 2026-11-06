@@ -107,20 +107,24 @@ input:focus{border-color:var(--gold)}
 .conf{position:fixed;width:12px;height:18px;top:50%;left:50%;z-index:41;pointer-events:none;border-radius:3px;animation:conf 1.4s ease-out forwards}
 @keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
 
+.streakfx{position:fixed;left:50%;top:22%;z-index:42;pointer-events:none;text-align:center;font-size:clamp(34px,8vw,64px);font-weight:900;color:#ffb020;
+  text-shadow:0 3px 0 #6a1000,0 0 22px #ff6a00;animation:streak 1.7s ease-out forwards}
+.streakfx small{display:block;font-size:.4em;color:#fff;text-shadow:0 2px 0 #6a1000}
+@keyframes streak{0%{transform:translate(-50%,0) scale(.3);opacity:0}15%{transform:translate(-50%,0) scale(1.15);opacity:1}25%{transform:translate(-50%,0) scale(1)}80%{opacity:1}100%{transform:translate(-50%,-60px) scale(1);opacity:0}}
 .big{font-size:56px;font-weight:800;color:var(--gold);line-height:1.1}
 </style>
 </head>
 <body>
 <header>
   <h1>🏮 RÚT QUẺ HỎI ĐÁP 🏮</h1>
-  <div class="sub">20 quẻ · mỗi câu 12 giây · đúng nhiều nhất và nhanh nhất sẽ thắng</div>
+  <div class="sub">20 quẻ · mỗi câu 12 giây · đúng liên tiếp có thưởng chuỗi 🔥</div>
 </header>
 
 <!-- 1. nhập tên -->
 <section class="screen" id="sJoin">
   <div class="panel">
     <h2>Nhập tên của bạn</h2>
-    <p>Xóc ống để rút quẻ, mỗi quẻ là một câu hỏi. Bằng điểm thì ai trả lời nhanh hơn xếp trên.</p>
+    <p>Xóc ống để rút quẻ, mỗi quẻ là một câu hỏi. Đúng được 10 điểm, đúng liên tiếp được thưởng chuỗi 🔥 (tới +10 mỗi câu). Bằng điểm thì ai trả lời nhanh hơn xếp trên.</p>
     <form id="joinForm">
       <input id="nameIn" maxlength="40" placeholder="Họ và tên" autocomplete="name" required aria-label="Họ và tên">
       <button class="btn wide">Bắt đầu</button>
@@ -133,7 +137,8 @@ input:focus{border-color:var(--gold)}
 <section class="screen" id="sPlay">
   <div class="status">
     <span class="pill">👤 <b id="whoName"></b></span>
-    <span class="pill">Đúng <b id="scoreTxt">0</b></span>
+    <span class="pill">Điểm <b id="scoreTxt">0</b></span>
+    <span class="pill">🔥 Chuỗi <b id="streakTxt">0</b></span>
     <span class="pill">Quẻ <b id="progTxt">0/20</b></span>
   </div>
   <button class="tube" id="tube" aria-label="Xóc ống quẻ">
@@ -203,12 +208,22 @@ const img = i => `que-cut/que-${String(i + 1).padStart(2, "0")}.png`;
 const $ = id => document.getElementById(id);
 
 // Tiến trình lưu trong máy người chơi: tải lại trang không làm lại được câu đã rút
-const STORE = "rutque-mln-v1";
+const STORE = "rutque-mln-v2";
 let S = null;
 try { S = JSON.parse(localStorage.getItem(STORE)); } catch {}
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch {} };
-const score = () => S.log.filter(x => x.ok).length;
+const correct = () => S.log.filter(x => x.ok).length;
+const score = () => S.log.reduce((s, x) => s + (x.pts || 0), 0);
 const totalMs = () => S.log.reduce((s, x) => s + x.ms, 0);
+
+/* ---- chuỗi: đúng 10 điểm; câu thứ n trong chuỗi thưởng thêm 2*(n-1), tối đa +10 ---- */
+const BASE = 10, STEP = 2, MAXBONUS = 10;
+const bonusFor = streak => Math.min(STEP * (streak - 1), MAXBONUS);
+// chuỗi đang có tính tới hết log (đếm các câu đúng liền nhau ở cuối)
+function streakOf(log) { let n = 0; for (let j = log.length - 1; j >= 0 && log[j].ok; j--) n++; return n; }
+function bestStreak(log) { let b = 0, n = 0; for (const x of log) { n = x.ok ? n + 1 : 0; b = Math.max(b, n); } return b; }
+console.assert([1, 2, 3, 6, 9].map(bonusFor).join() === "0,2,4,10,10", "sai điểm thưởng chuỗi");
+console.assert(streakOf([{ ok: true }, { ok: false }, { ok: true }, { ok: true }]) === 2 && bestStreak([{ ok: true }, { ok: true }, { ok: false }, { ok: true }]) === 2, "sai đếm chuỗi");
 
 function show(id) { document.querySelectorAll(".screen").forEach(s => s.classList.toggle("show", s.id === id)); }
 
@@ -243,7 +258,11 @@ function startPlay() {
   if (!S.left.length) return finish();
   show("sPlay");
 }
-const renderStatus = () => { $("scoreTxt").textContent = score(); $("progTxt").textContent = `${S.log.length}/20`; };
+const renderStatus = () => {
+  $("scoreTxt").textContent = score();
+  $("progTxt").textContent = `${S.log.length}/20`;
+  $("streakTxt").textContent = streakOf(S.log);
+};
 
 /* ---- ống quẻ ---- */
 for (let i = 0; i < 15; i++) {
@@ -324,7 +343,9 @@ function judge(k) {
   const bar = $("bar"); bar.style.width = getComputedStyle(bar).width; bar.style.transition = "none";
   const ms = k === null ? TIME * 1000 : Math.min(TIME * 1000, Math.round(performance.now() - t0));
   const ok = k === Q[cur].c;
-  Object.assign(S.log[S.log.length - 1], { pick: k, ok, ms });
+  const streak = ok ? streakOf(S.log.slice(0, -1)) + 1 : 0;
+  const bonus = ok ? bonusFor(streak) : 0;
+  Object.assign(S.log[S.log.length - 1], { pick: k, ok, ms, pts: ok ? BASE + bonus : 0 });
   save(); renderStatus();
   [...$("opts").children].forEach((b, j) => {
     b.disabled = true;
@@ -332,10 +353,12 @@ function judge(k) {
     else if (j === k) b.classList.add("wrong");
   });
   ok ? fxGood() : fxBad();
+  if (streak >= 2) fxStreak(streak, bonus);
   if (k === null) $("timeup").textContent = "HẾT GIỜ!";
+  const lost = streakOf(S.log.slice(0, -1));
   $("answer").innerHTML = ok
-    ? `ĐÚNG! +1 điểm 🎉 <span style="opacity:.7">(${(ms / 1000).toFixed(1)} giây)</span>`
-    : `${k === null ? "Hết giờ" : "SAI"}! Đáp án đúng là <b>${KEYS[Q[cur].c]}</b>`;
+    ? `ĐÚNG! +${BASE} điểm${bonus ? ` <b>+${bonus} thưởng chuỗi ${streak} 🔥</b>` : ""} <span style="opacity:.7">(${(ms / 1000).toFixed(1)} giây)</span>`
+    : `${k === null ? "Hết giờ" : "SAI"}! Đáp án đúng là <b>${KEYS[Q[cur].c]}</b>${lost >= 2 ? ` — mất chuỗi ${lost} 💔` : ""}`;
   $("answer").style.display = "block";
   $("btnNext").textContent = S.left.length ? "Rút quẻ tiếp ➜" : "Xem kết quả ➜";
   $("btnNext").style.display = "inline-block";
@@ -351,8 +374,8 @@ $("btnNext").onclick = () => {
 function finish() {
   show("sEnd");
   $("endName").textContent = S.name;
-  $("endScore").textContent = `${score()}/20`;
-  $("endTime").textContent = `Tổng thời gian trả lời: ${(totalMs() / 1000).toFixed(1)} giây`;
+  $("endScore").textContent = `${score()} điểm`;
+  $("endTime").innerHTML = `Đúng ${correct()}/20 câu · chuỗi dài nhất ${bestStreak(S.log)} 🔥<br>Tổng thời gian trả lời: ${(totalMs() / 1000).toFixed(1)} giây`;
   if (S.sent) { $("sendMsg").textContent = "✔ Đã gửi điểm."; return; }
   send();
 }
@@ -364,7 +387,7 @@ async function send() {
     const detail = S.log.map(x => `${x.i + 1}:${x.pick === null ? "-" : KEYS[x.pick]}${x.ok ? "✓" : "✗"}`).join(" ");
     // text/plain để trình duyệt không gửi yêu cầu kiểm tra trước (Apps Script không hỗ trợ)
     const res = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ name: S.name, score: score(), ms: totalMs(), detail }) });
+      body: JSON.stringify({ name: S.name, score: score(), correct: correct(), streak: bestStreak(S.log), ms: totalMs(), detail }) });
     const j = await res.json();
     if (!j.ok) throw new Error(j.error || "máy chủ từ chối");
     S.sent = true; save();
@@ -398,6 +421,14 @@ function fxGood() {
     document.body.appendChild(c);
     setTimeout(() => c.remove(), 1500);
   }
+}
+function fxStreak(n, bonus) {
+  const d = document.createElement("div");
+  d.className = "streakfx";
+  d.innerHTML = `🔥 CHUỖI ${n}<small>+${bonus} điểm thưởng</small>`;
+  document.body.appendChild(d);
+  [0, .08, .16].forEach((w, j) => tone(700 + n * 60 + j * 200, .15, "square", .5 + w, .08));
+  setTimeout(() => d.remove(), 1700);
 }
 function fxBad() {
   sNo();
